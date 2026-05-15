@@ -225,7 +225,7 @@ export default function CarritoPage() {
 const formatPrecio = (precio: number) => `${precio.toFixed(2)} Bs`;
 
     let mensajeTexto = `────────────────────
-JOYERÍA BELLA - COTIZACIÓN
+JOYERÍA ESMERALDA - COTIZACIÓN
 ────────────────────
 DATOS DEL CLIENTE
 ────────────────────
