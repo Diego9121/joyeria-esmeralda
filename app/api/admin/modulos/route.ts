@@ -50,9 +50,24 @@ export async function POST(request: Request) {
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
       return NextResponse.json({ success: true, data: modulo });
     } else if (tipo === 'subcategoria') {
+      const prefijoUpper = data.prefijo_codigo.toUpperCase().trim();
+      
+      const { data: existing } = await supabaseAdmin
+        .from('subcategorias')
+        .select('*')
+        .eq('modulo_id', data.modulo_id)
+        .eq('prefijo_codigo', prefijoUpper)
+        .single();
+
+      if (existing) {
+        return NextResponse.json({ 
+          error: `El prefijo '${prefijoUpper}' ya está en uso por '${existing.nombre}' en este módulo` 
+        }, { status: 409 });
+      }
+
       const { data: subcategoria, error } = await supabaseAdmin
         .from('subcategorias')
-        .insert({ nombre: data.nombre, modulo_id: data.modulo_id, prefijo_codigo: data.prefijo_codigo })
+        .insert({ nombre: data.nombre, modulo_id: data.modulo_id, prefijo_codigo: prefijoUpper })
         .select()
         .single();
 
@@ -79,9 +94,25 @@ export async function PUT(request: Request) {
 
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     } else if (tipo === 'subcategoria') {
+      const prefijoUpper = data.prefijo_codigo.toUpperCase().trim();
+      
+      const { data: existing } = await supabaseAdmin
+        .from('subcategorias')
+        .select('*, modulos(prefijo_codigo)')
+        .eq('modulo_id', data.modulo_id)
+        .eq('prefijo_codigo', prefijoUpper)
+        .neq('id', id)
+        .single();
+
+      if (existing) {
+        return NextResponse.json({ 
+          error: `El prefijo '${prefijoUpper}' ya está en uso por '${existing.nombre}' en este módulo` 
+        }, { status: 409 });
+      }
+
       const { error } = await supabaseAdmin
         .from('subcategorias')
-        .update({ nombre: data.nombre, prefijo_codigo: data.prefijo_codigo })
+        .update({ nombre: data.nombre, prefijo_codigo: prefijoUpper })
         .eq('id', id);
 
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
